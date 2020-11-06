@@ -6,6 +6,7 @@ import (
 	"github.com/gocolly/colly"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -35,9 +36,20 @@ func main() {
 	query := getInput("What should we search for?", "fantasy")
 	// ask about the page count
 	pageCount := getInput("How many pages should we crawl?", "10")
+	// parse pageCount to int
+	pageCountInt, err := strconv.Atoi(pageCount)
+	if err != nil {
+		log.Fatal("can't parse page count to int: ", err)
+	}
 	// print the results for user
-	log.Println("Detected inputs:", query, pageCount)
+	log.Println("Detected inputs:", query, pageCountInt)
 
 	// generate new collector
-	colly.NewCollector()
+	c := colly.NewCollector()
+
+	// start scraping
+	err = c.Visit("https://www.goodreads.com/search?q=" + query)
+	if err != nil {
+		log.Fatal("error while starting the first visit: ", err)
+	}
 }
