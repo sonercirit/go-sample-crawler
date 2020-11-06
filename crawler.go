@@ -2,8 +2,10 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"github.com/gocolly/colly"
+	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -12,12 +14,12 @@ import (
 )
 
 type book struct {
-	title           string
-	authors         []string
-	averageRating   float32
-	numberOfRatings int
-	published       int
-	editions        int
+	Title           string   `json:"title,omitempty"`
+	Authors         []string `json:"authors,omitempty"`
+	AverageRating   float32  `json:"average_rating,omitempty"`
+	NumberOfRatings int      `json:"number_of_ratings,omitempty"`
+	Published       int      `json:"published,omitempty"`
+	Editions        int      `json:"editions,omitempty"`
 }
 
 var regexes struct {
@@ -148,12 +150,12 @@ func handleBooks(c *colly.Collector, books *[]book, bookCount *int) {
 
 		// generate and add struct to books array
 		*books = append(*books, book{
-			title:           name,
-			authors:         authors,
-			averageRating:   float32(averageRatingFloat),
-			numberOfRatings: numberOfRatingsInt,
-			published:       publishedInt,
-			editions:        editionsInt,
+			Title:           name,
+			Authors:         authors,
+			AverageRating:   float32(averageRatingFloat),
+			NumberOfRatings: numberOfRatingsInt,
+			Published:       publishedInt,
+			Editions:        editionsInt,
 		})
 	})
 }
@@ -170,6 +172,19 @@ func startScraping(pageCountInt int, query string, c *colly.Collector) {
 		if err != nil {
 			log.Fatal("error while doing the request: ", err)
 		}
+	}
+}
+
+func writeToFile(data []book) {
+	// generate json from struct
+	file, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		log.Fatal("error while generating json: ", err)
+	}
+	// write results to file
+	err = ioutil.WriteFile("results.json", file, 0644)
+	if err != nil {
+		log.Fatal("error while writing to file: ", err)
 	}
 }
 
@@ -204,6 +219,8 @@ func main() {
 
 	// wait for all the threads to finish
 	c.Wait()
+	// write results to file
+	writeToFile(books)
 	// print the final book count
 	log.Println("Parsed book count:", bookCount)
 }
