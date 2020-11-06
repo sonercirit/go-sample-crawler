@@ -64,7 +64,7 @@ func getAverageRating(text string) float64 {
 	// convert to float
 	averageRatingFloat, err := strconv.ParseFloat(averageRating, 32)
 	if err != nil {
-		log.Fatal("error while parsing averageRating to int: ", err)
+		log.Fatal("error while parsing averageRating to float: ", err)
 	}
 	return averageRatingFloat
 }
