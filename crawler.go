@@ -54,9 +54,17 @@ func main() {
 		// increment the counter for each book
 		bookCount++
 		// get the book name
-		name := e.ChildText("a.bookTitle")
+		name := e.ChildText(".bookTitle")
 		// log the founded book
 		log.Println("Found book:", name)
+
+		// create the authors array
+		var authors []string
+		// for each author
+		e.ForEach(".authorName__container", func(i int, e *colly.HTMLElement) {
+			// add the author to array
+			authors = append(authors, e.Text)
+		})
 	})
 
 	// for every page - i starts at 1 and goes till including pageCountInt
