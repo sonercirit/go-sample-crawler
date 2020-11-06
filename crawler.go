@@ -54,6 +54,8 @@ func main() {
 	// generate new collector - start the generator in async mode
 	c := colly.NewCollector(colly.Async(true))
 
+	// init books array
+	var books []book
 	// start the book counter
 	bookCount := 0
 	// for each book result
@@ -71,6 +73,31 @@ func main() {
 		e.ForEach(".authorName__container", func(i int, e *colly.HTMLElement) {
 			// add the author to array
 			authors = append(authors, strings.TrimSpace(e.Text))
+		})
+
+		// get ratings
+		ratings := e.ChildText(".minirating")
+		// parse into fields
+		ratingFields := strings.Fields(ratings)
+		// assign average rating
+		averageRating, err := strconv.ParseFloat(ratingFields[0], 32)
+		if err != nil {
+			log.Fatal("error while parsing averageRating to int: ", err)
+		}
+		// remove commas from number of ratings
+		numberOfRatings := strings.ReplaceAll(ratingFields[4], ",", "")
+		// convert to integer
+		numberOfRatingsInt, err := strconv.Atoi(numberOfRatings)
+		if err != nil {
+			log.Fatal("error while parsing numberOfRatings to int: ", err)
+		}
+
+		// generate and add struct to books array
+		books = append(books, book{
+			title:           name,
+			authors:         authors,
+			averageRating:   float32(averageRating),
+			numberOfRatings: numberOfRatingsInt,
 		})
 	})
 
