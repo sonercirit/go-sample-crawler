@@ -16,11 +16,13 @@ type book struct {
 	authors         []string
 	averageRating   float32
 	numberOfRatings int
+	published       int
 }
 
 var regexes struct {
 	averageRatingRegex   *regexp.Regexp
 	numberOfRatingsRegex *regexp.Regexp
+	publishedRegex       *regexp.Regexp
 }
 
 func getInput(question string, def string) string {
@@ -49,9 +51,11 @@ func compileRegexes() {
 	regexes.averageRatingRegex = regexp.MustCompile("([\\d|.]*) avg rating")
 	// number of ratings regex
 	regexes.numberOfRatingsRegex = regexp.MustCompile("([\\d|,]*) ratings")
+	// published regex - extra whitespace check because some date are separated by newline (\n)
+	regexes.publishedRegex = regexp.MustCompile("published\\s*(\\d*)")
 }
 
-func getDetails(e *colly.HTMLElement) (float64, int) {
+func getDetails(e *colly.HTMLElement) (float64, int, int) {
 	// get text
 	text := e.ChildText(".uitext.greyText.smallText")
 
@@ -73,8 +77,23 @@ func getDetails(e *colly.HTMLElement) (float64, int) {
 		log.Fatal("error while parsing numberOfRatings to int: ", err)
 	}
 
+	// get matches
+	publishedMatches := regexes.publishedRegex.FindStringSubmatch(text)
+	// init publishedInt variable
+	var publishedInt int
+	// there might not be a publish date
+	if publishedMatches != nil {
+		// assign publish year
+		published := publishedMatches[1]
+		// parse to int
+		publishedInt, err = strconv.Atoi(published)
+		if err != nil {
+			log.Fatal("error while parsing publish date to int: ", err)
+		}
+	}
+
 	// return the final results
-	return averageRatingFloat, numberOfRatingsInt
+	return averageRatingFloat, numberOfRatingsInt, publishedInt
 }
 
 func getAuthors(e *colly.HTMLElement) []string {
@@ -89,11 +108,11 @@ func getAuthors(e *colly.HTMLElement) []string {
 	return authors
 }
 
-func handleBooks(c *colly.Collector, books []book, bookCount int) {
+func handleBooks(c *colly.Collector, books *[]book, bookCount *int) {
 	// for each book result
 	c.OnHTML("tr", func(e *colly.HTMLElement) {
 		// increment the counter for each book
-		bookCount++
+		*bookCount++
 		// get the book name
 		name := e.ChildText(".bookTitle")
 		// log the founded book
@@ -103,14 +122,15 @@ func handleBooks(c *colly.Collector, books []book, bookCount int) {
 		authors := getAuthors(e)
 
 		// parse and get details string
-		averageRatingFloat, numberOfRatingsInt := getDetails(e)
+		averageRatingFloat, numberOfRatingsInt, publishedInt := getDetails(e)
 
 		// generate and add struct to books array
-		books = append(books, book{
+		*books = append(*books, book{
 			title:           name,
 			authors:         authors,
 			averageRating:   float32(averageRatingFloat),
 			numberOfRatings: numberOfRatingsInt,
+			published:       publishedInt,
 		})
 	})
 }
@@ -154,7 +174,7 @@ func main() {
 	// start the book counter
 	bookCount := 0
 	// register book handler
-	handleBooks(c, books, bookCount)
+	handleBooks(c, &books, &bookCount)
 
 	// start scraping
 	startScraping(pageCountInt, query, c)
