@@ -6,6 +6,7 @@ import (
 	"github.com/gocolly/colly"
 	"log"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -39,6 +40,12 @@ func getInput(question string, def string) string {
 }
 
 func main() {
+	// compile regexes
+	// average rating regex
+	averageRatingRegex := regexp.MustCompile("([\\d|.]*) avg rating")
+	// number of ratings regex
+	numberOfRatingsRegex := regexp.MustCompile("([\\d|,]*) ratings")
+
 	// ask about the query
 	query := getInput("What should we search for?", "fantasy")
 	// ask about the page count
@@ -75,17 +82,21 @@ func main() {
 			authors = append(authors, strings.TrimSpace(e.Text))
 		})
 
-		// get ratings
-		ratings := e.ChildText(".minirating")
-		// parse into fields
-		ratingFields := strings.Fields(ratings)
+		// get text
+		text := e.ChildText(".uitext.greyText.smallText")
+
 		// assign average rating
-		averageRating, err := strconv.ParseFloat(ratingFields[0], 32)
+		averageRating := averageRatingRegex.FindStringSubmatch(text)[1]
+		// convert to float
+		averageRatingFloat, err := strconv.ParseFloat(averageRating, 32)
 		if err != nil {
 			log.Fatal("error while parsing averageRating to int: ", err)
 		}
+
+		// assign number of ratings
+		numberOfRatings := numberOfRatingsRegex.FindStringSubmatch(text)[1]
 		// remove commas from number of ratings
-		numberOfRatings := strings.ReplaceAll(ratingFields[4], ",", "")
+		numberOfRatings = strings.ReplaceAll(numberOfRatings, ",", "")
 		// convert to integer
 		numberOfRatingsInt, err := strconv.Atoi(numberOfRatings)
 		if err != nil {
@@ -96,7 +107,7 @@ func main() {
 		books = append(books, book{
 			title:           name,
 			authors:         authors,
-			averageRating:   float32(averageRating),
+			averageRating:   float32(averageRatingFloat),
 			numberOfRatings: numberOfRatingsInt,
 		})
 	})
