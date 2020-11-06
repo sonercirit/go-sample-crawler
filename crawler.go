@@ -55,7 +55,7 @@ func compileRegexes() {
 	// number of ratings regex
 	regexes.numberOfRatingsRegex = regexp.MustCompile(" ([\\d|,]+) rating")
 	// published regex - extra whitespace check because some date are separated by newline (\n)
-	regexes.publishedRegex = regexp.MustCompile("published\\s+(\\d+)")
+	regexes.publishedRegex = regexp.MustCompile("published\\s+(-?\\d+)")
 	// editions regex
 	regexes.editionsRegex = regexp.MustCompile("(\\d+) edition")
 }
