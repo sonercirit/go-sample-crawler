@@ -47,12 +47,20 @@ func main() {
 	// generate new collector
 	c := colly.NewCollector()
 
+	// for each book result
+	c.OnHTML("tr", func(e *colly.HTMLElement) {
+		// get the book name
+		name := e.ChildText("span[role=heading]")
+		// log the founded book
+		log.Println("Found book:", name)
+	})
+
 	// for every page - i starts at 1 and goes till including pageCountInt
 	for i := 1; i <= pageCountInt; i++ {
 		// generate url
 		url := fmt.Sprintf("https://www.goodreads.com/search?page=%d&q=%s", i, query)
 		// print url that is going to be parsed
-		log.Println("Going to parse", url)
+		log.Println("Going to parse:", url)
 		// start scraping
 		err = c.Visit(url)
 		if err != nil {
