@@ -60,18 +60,18 @@ func compileRegexes() {
 	regexes.editionsRegex = regexp.MustCompile("(\\d+) edition")
 }
 
-func getAverageRating(text string) float64 {
+func getAverageRating(text string) (float64, error) {
 	// assign average rating
 	averageRating := regexes.averageRatingRegex.FindStringSubmatch(text)[1]
 	// convert to float
 	averageRatingFloat, err := strconv.ParseFloat(averageRating, 32)
 	if err != nil {
-		log.Fatal("error while parsing averageRating to float: ", err)
+		return 0, err
 	}
-	return averageRatingFloat
+	return averageRatingFloat, nil
 }
 
-func getNumberOfRatings(text string) int {
+func getNumberOfRatings(text string) (int, error) {
 	// assign number of ratings
 	numberOfRatings := regexes.numberOfRatingsRegex.FindStringSubmatch(text)[1]
 	// remove commas from number of ratings
@@ -79,12 +79,12 @@ func getNumberOfRatings(text string) int {
 	// convert to integer
 	numberOfRatingsInt, err := strconv.Atoi(numberOfRatings)
 	if err != nil {
-		log.Fatal("error while parsing numberOfRatings to int: ", err)
+		return 0, err
 	}
-	return numberOfRatingsInt
+	return numberOfRatingsInt, err
 }
 
-func getPublished(text string) int {
+func getPublished(text string) (int, error) {
 	// get matches
 	publishedMatches := regexes.publishedRegex.FindStringSubmatch(text)
 	// init publishedInt variable
@@ -98,21 +98,21 @@ func getPublished(text string) int {
 		// parse to int
 		publishedInt, err = strconv.Atoi(published)
 		if err != nil {
-			log.Fatal("error while parsing publish date to int: ", err)
+			return 0, err
 		}
 	}
-	return publishedInt
+	return publishedInt, nil
 }
 
-func getEditions(text string) int {
+func getEditions(text string) (int, error) {
 	// assign editions
 	editions := regexes.editionsRegex.FindStringSubmatch(text)[1]
 	// convert to integer
 	editionsInt, err := strconv.Atoi(editions)
 	if err != nil {
-		log.Fatal("error while parsing editions to int: ", err)
+		return 0, err
 	}
-	return editionsInt
+	return editionsInt, nil
 }
 
 func getAuthors(e *colly.HTMLElement) []string {
@@ -133,8 +133,6 @@ func handleBooks(c *colly.Collector, books *[]book, bookCount *int) {
 		*bookCount++
 		// get the book name
 		name := e.ChildText(".bookTitle")
-		// log the founded book
-		log.Println("Found book:", name)
 
 		// get authors array
 		authors := getAuthors(e)
@@ -143,10 +141,26 @@ func handleBooks(c *colly.Collector, books *[]book, bookCount *int) {
 		text := e.ChildText(".uitext.greyText.smallText")
 
 		// parse and get details
-		averageRatingFloat := getAverageRating(text)
-		numberOfRatingsInt := getNumberOfRatings(text)
-		publishedInt := getPublished(text)
-		editionsInt := getEditions(text)
+		averageRatingFloat, err := getAverageRating(text)
+		if err != nil {
+			log.Println("error while parsing averageRating to float:", err, name)
+			return
+		}
+		numberOfRatingsInt, err := getNumberOfRatings(text)
+		if err != nil {
+			log.Println("error while parsing numberOfRatings to int:", err, name)
+			return
+		}
+		publishedInt, err := getPublished(text)
+		if err != nil {
+			log.Println("error while parsing publish date to int:", err, name)
+			return
+		}
+		editionsInt, err := getEditions(text)
+		if err != nil {
+			log.Println("error while parsing editions to int:", err, name)
+			return
+		}
 
 		// generate and add struct to books array
 		*books = append(*books, book{
@@ -186,6 +200,7 @@ func writeToFile(data []book) {
 	if err != nil {
 		log.Fatal("error while writing to file: ", err)
 	}
+	log.Println("You can find the results at results.json")
 }
 
 func main() {
