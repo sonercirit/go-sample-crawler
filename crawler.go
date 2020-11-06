@@ -44,11 +44,15 @@ func main() {
 	// print the results for user
 	log.Println("Detected inputs:", query, pageCountInt)
 
-	// generate new collector
-	c := colly.NewCollector()
+	// generate new collector - start the generator in async mode
+	c := colly.NewCollector(colly.Async(true))
 
+	// start the book counter
+	bookCount := 0
 	// for each book result
 	c.OnHTML("tr", func(e *colly.HTMLElement) {
+		// increment the counter for each book
+		bookCount++
 		// get the book name
 		name := e.ChildText("span[role=heading]")
 		// log the founded book
@@ -67,4 +71,9 @@ func main() {
 			log.Fatal("error while doing the request: ", err)
 		}
 	}
+
+	// wait for all the threads to finish
+	c.Wait()
+	// print the final book count
+	log.Println("Parsed book count:", bookCount)
 }
