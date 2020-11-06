@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/gocolly/colly"
 	"log"
 	"os"
 	"strings"
@@ -34,5 +35,9 @@ func main() {
 	query := getInput("What should we search for?", "fantasy")
 	// ask about the page count
 	pageCount := getInput("How many pages should we crawl?", "10")
-	log.Println(query, pageCount)
+	// print the results for user
+	log.Println("Detected inputs:", query, pageCount)
+
+	// generate new collector
+	colly.NewCollector()
 }
