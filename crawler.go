@@ -33,7 +33,7 @@ func getInput(question string, def string) string {
 	// read from stdin
 	reader := bufio.NewReader(os.Stdin)
 	// ask the question
-	fmt.Printf("%s Default %s: ", question, def)
+	fmt.Printf("%s Default \"%s\": ", question, def)
 	// read until the newline separator
 	text, err := reader.ReadString('\n')
 	if err != nil {
