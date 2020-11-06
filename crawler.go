@@ -47,9 +47,16 @@ func main() {
 	// generate new collector
 	c := colly.NewCollector()
 
-	// start scraping
-	err = c.Visit("https://www.goodreads.com/search?q=" + query)
-	if err != nil {
-		log.Fatal("error while starting the first visit: ", err)
+	// for every page - i starts at 1 and goes till including pageCountInt
+	for i := 1; i <= pageCountInt; i++ {
+		// generate url
+		url := fmt.Sprintf("https://www.goodreads.com/search?page=%d&q=%s", i, query)
+		// print url that is going to be parsed
+		log.Println("Going to parse", url)
+		// start scraping
+		err = c.Visit(url)
+		if err != nil {
+			log.Fatal("error while doing the request: ", err)
+		}
 	}
 }
