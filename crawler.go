@@ -63,7 +63,7 @@ func main() {
 		// for each author
 		e.ForEach(".authorName__container", func(i int, e *colly.HTMLElement) {
 			// add the author to array
-			authors = append(authors, e.Text)
+			authors = append(authors, strings.TrimSpace(e.Text))
 		})
 	})
 
