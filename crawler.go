@@ -54,7 +54,7 @@ func main() {
 		// increment the counter for each book
 		bookCount++
 		// get the book name
-		name := e.ChildText("span[role=heading]")
+		name := e.ChildText("a.bookTitle")
 		// log the founded book
 		log.Println("Found book:", name)
 	})
