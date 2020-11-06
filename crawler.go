@@ -108,7 +108,7 @@ func getEditions(text string) int {
 	// convert to integer
 	editionsInt, err := strconv.Atoi(editions)
 	if err != nil {
-		log.Fatal("error while parsing numberOfRatings to int: ", err)
+		log.Fatal("error while parsing editions to int: ", err)
 	}
 	return editionsInt
 }
