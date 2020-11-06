@@ -51,13 +51,13 @@ func getInput(question string, def string) string {
 
 func compileRegexes() {
 	// average rating regex
-	regexes.averageRatingRegex = regexp.MustCompile("([\\d|.]*) avg rating")
+	regexes.averageRatingRegex = regexp.MustCompile("([\\d|.]+) avg rating")
 	// number of ratings regex
-	regexes.numberOfRatingsRegex = regexp.MustCompile(" ([\\d|,]*) rating")
+	regexes.numberOfRatingsRegex = regexp.MustCompile(" ([\\d|,]+) rating")
 	// published regex - extra whitespace check because some date are separated by newline (\n)
-	regexes.publishedRegex = regexp.MustCompile("published\\s*(\\d*)")
+	regexes.publishedRegex = regexp.MustCompile("published\\s+(\\d+)")
 	// editions regex
-	regexes.editionsRegex = regexp.MustCompile("(\\d*) edition")
+	regexes.editionsRegex = regexp.MustCompile("(\\d+) edition")
 }
 
 func getAverageRating(text string) float64 {
