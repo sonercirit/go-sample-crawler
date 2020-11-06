@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 func getInput(question string) string {
@@ -14,7 +15,7 @@ func getInput(question string) string {
 	if err != nil {
 		log.Fatal("can't read input: ", err)
 	}
-	return text
+	return strings.TrimSpace(text)
 }
 
 func main() {
