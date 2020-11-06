@@ -10,6 +10,13 @@ import (
 	"strings"
 )
 
+type book struct {
+	title           string
+	authors         []string
+	averageRating   float32
+	numberOfRatings int
+}
+
 func getInput(question string, def string) string {
 	// read from stdin
 	reader := bufio.NewReader(os.Stdin)
