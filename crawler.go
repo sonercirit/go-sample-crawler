@@ -103,7 +103,7 @@ func getPublished(text string) int {
 }
 
 func getEditions(text string) int {
-	// assign number of ratings
+	// assign editions
 	editions := regexes.editionsRegex.FindStringSubmatch(text)[1]
 	// convert to integer
 	editionsInt, err := strconv.Atoi(editions)
@@ -140,7 +140,7 @@ func handleBooks(c *colly.Collector, books *[]book, bookCount *int) {
 		// get text
 		text := e.ChildText(".uitext.greyText.smallText")
 
-		// parse and get details string
+		// parse and get details
 		averageRatingFloat := getAverageRating(text)
 		numberOfRatingsInt := getNumberOfRatings(text)
 		publishedInt := getPublished(text)
