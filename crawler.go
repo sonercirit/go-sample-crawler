@@ -17,12 +17,14 @@ type book struct {
 	averageRating   float32
 	numberOfRatings int
 	published       int
+	editions        int
 }
 
 var regexes struct {
 	averageRatingRegex   *regexp.Regexp
 	numberOfRatingsRegex *regexp.Regexp
 	publishedRegex       *regexp.Regexp
+	editionsRegex        *regexp.Regexp
 }
 
 func getInput(question string, def string) string {
@@ -49,9 +51,11 @@ func compileRegexes() {
 	// average rating regex
 	regexes.averageRatingRegex = regexp.MustCompile("([\\d|.]*) avg rating")
 	// number of ratings regex
-	regexes.numberOfRatingsRegex = regexp.MustCompile("([\\d|,]*) ratings")
+	regexes.numberOfRatingsRegex = regexp.MustCompile(" ([\\d|,]*) rating")
 	// published regex - extra whitespace check because some date are separated by newline (\n)
 	regexes.publishedRegex = regexp.MustCompile("published\\s*(\\d*)")
+	// editions regex
+	regexes.editionsRegex = regexp.MustCompile("(\\d*) edition")
 }
 
 func getAverageRating(text string) float64 {
@@ -98,6 +102,17 @@ func getPublished(text string) int {
 	return publishedInt
 }
 
+func getEditions(text string) int {
+	// assign number of ratings
+	editions := regexes.editionsRegex.FindStringSubmatch(text)[1]
+	// convert to integer
+	editionsInt, err := strconv.Atoi(editions)
+	if err != nil {
+		log.Fatal("error while parsing numberOfRatings to int: ", err)
+	}
+	return editionsInt
+}
+
 func getAuthors(e *colly.HTMLElement) []string {
 	// create the authors array
 	var authors []string
@@ -129,6 +144,7 @@ func handleBooks(c *colly.Collector, books *[]book, bookCount *int) {
 		averageRatingFloat := getAverageRating(text)
 		numberOfRatingsInt := getNumberOfRatings(text)
 		publishedInt := getPublished(text)
+		editionsInt := getEditions(text)
 
 		// generate and add struct to books array
 		*books = append(*books, book{
@@ -137,6 +153,7 @@ func handleBooks(c *colly.Collector, books *[]book, bookCount *int) {
 			averageRating:   float32(averageRatingFloat),
 			numberOfRatings: numberOfRatingsInt,
 			published:       publishedInt,
+			editions:        editionsInt,
 		})
 	})
 }
