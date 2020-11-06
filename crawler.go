@@ -42,7 +42,6 @@ func getInput(question string, def string) string {
 		// assign the default value
 		text = def
 	}
-	// return the final result
 	return text
 }
 
@@ -55,10 +54,7 @@ func compileRegexes() {
 	regexes.publishedRegex = regexp.MustCompile("published\\s*(\\d*)")
 }
 
-func getDetails(e *colly.HTMLElement) (float64, int, int) {
-	// get text
-	text := e.ChildText(".uitext.greyText.smallText")
-
+func getAverageRating(text string) float64 {
 	// assign average rating
 	averageRating := regexes.averageRatingRegex.FindStringSubmatch(text)[1]
 	// convert to float
@@ -66,7 +62,10 @@ func getDetails(e *colly.HTMLElement) (float64, int, int) {
 	if err != nil {
 		log.Fatal("error while parsing averageRating to int: ", err)
 	}
+	return averageRatingFloat
+}
 
+func getNumberOfRatings(text string) int {
 	// assign number of ratings
 	numberOfRatings := regexes.numberOfRatingsRegex.FindStringSubmatch(text)[1]
 	// remove commas from number of ratings
@@ -76,11 +75,16 @@ func getDetails(e *colly.HTMLElement) (float64, int, int) {
 	if err != nil {
 		log.Fatal("error while parsing numberOfRatings to int: ", err)
 	}
+	return numberOfRatingsInt
+}
 
+func getPublished(text string) int {
 	// get matches
 	publishedMatches := regexes.publishedRegex.FindStringSubmatch(text)
 	// init publishedInt variable
 	var publishedInt int
+	// also init error to avoid compile error
+	var err error
 	// there might not be a publish date
 	if publishedMatches != nil {
 		// assign publish year
@@ -91,9 +95,7 @@ func getDetails(e *colly.HTMLElement) (float64, int, int) {
 			log.Fatal("error while parsing publish date to int: ", err)
 		}
 	}
-
-	// return the final results
-	return averageRatingFloat, numberOfRatingsInt, publishedInt
+	return publishedInt
 }
 
 func getAuthors(e *colly.HTMLElement) []string {
@@ -104,7 +106,6 @@ func getAuthors(e *colly.HTMLElement) []string {
 		// add the author to array
 		authors = append(authors, strings.TrimSpace(e.Text))
 	})
-	// return the final results
 	return authors
 }
 
@@ -121,8 +122,13 @@ func handleBooks(c *colly.Collector, books *[]book, bookCount *int) {
 		// get authors array
 		authors := getAuthors(e)
 
+		// get text
+		text := e.ChildText(".uitext.greyText.smallText")
+
 		// parse and get details string
-		averageRatingFloat, numberOfRatingsInt, publishedInt := getDetails(e)
+		averageRatingFloat := getAverageRating(text)
+		numberOfRatingsInt := getNumberOfRatings(text)
+		publishedInt := getPublished(text)
 
 		// generate and add struct to books array
 		*books = append(*books, book{
